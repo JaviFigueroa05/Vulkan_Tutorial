@@ -6,3 +6,6 @@ VulkanTest:
 
 DrawingTriangle:
 	cd drawing_triangle && make test
+
+clean:
+	rm -f bin/*
