@@ -4,9 +4,9 @@ LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 DrawingTriangle: main.cpp
 	g++ $(CFLAGS) -o ../bin/DrawingTriangle main.cpp $(LDFLAGS)
 
-CompileShaders: shaders/triangle.vert shaders/triangle.frag
-	glslc shaders/triangle.vert -o shaders/triangle.vert.spv
-	glslc shaders/triangle.frag -o shaders/triangle.frag.spv
+CompileShaders: shaders/shader.vert shaders/shader.frag
+	glslc shaders/shader.vert -o shaders/vert.spv
+	glslc shaders/shader.frag -o shaders/frag.spv
 
 .PHONY: test clean
 
