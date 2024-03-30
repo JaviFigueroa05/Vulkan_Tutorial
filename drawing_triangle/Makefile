@@ -1,6 +1,6 @@
 STB_INCLUDE_PATH = ../include
 
-RELEASE_CFLAGS = -std=c++17 -O3 -DNBDEBUG=1 -I$(STB_INCLUDE_PATH)
+RELEASE_CFLAGS = -std=c++17 -O3 -DNDEBUG=1 -I$(STB_INCLUDE_PATH)
 CFLAGS = -std=c++17 -O2 -I$(STB_INCLUDE_PATH)
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 
