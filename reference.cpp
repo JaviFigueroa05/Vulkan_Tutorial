@@ -9,10 +9,10 @@
 #include <glm/gtx/hash.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "../include/stb_image.h"
+#include "include/stb_image.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "../include/tiny_obj_loader.h"
+#include "include/tiny_obj_loader.h"
 
 #include <iostream>
 #include <fstream>
