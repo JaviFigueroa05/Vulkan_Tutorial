@@ -21,7 +21,7 @@ testCompute: Compute CompileComputeShaders
 Graphics: Graphics.cpp
 	g++ $(CFLAGS) -o bin/Graphics Graphics.cpp $(LDFLAGS)
 
-CompileGrapicsShaders: shaders/shader.vert shaders/shader.frag
+CompileGraphicsShaders: shaders/shader.vert shaders/shader.frag
 	glslc shaders/shader.vert -o shaders/vert.spv
 	glslc shaders/shader.frag -o shaders/frag.spv
 
