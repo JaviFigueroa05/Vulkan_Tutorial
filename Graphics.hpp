@@ -1,5 +1,4 @@
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
@@ -31,12 +30,12 @@
 #include <fstream>
 #include <array>
 
-const uint32_t WIDTH = 800;
-const uint32_t HEIGHT = 600;
+#include "Window.hpp"
 
-const std::string MODEL_PATH = "meshes/viking_room.obj";
-const std::string TEXTURE_PATH = "textures/viking_room.png";
-
+const std::string MODEL_PATH = "../meshes/viking_room.obj";
+const std::string TEXTURE_PATH = "../textures/viking_room.png";
+const std::string VERTEX_SHADER_PATH = "../shaders/vert.spv";
+const std::string FRAGMENT_SHADER_PATH = "../shaders/frag.spv";
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
 struct UniformBufferObject {
@@ -117,15 +116,19 @@ struct SwapChainSupportDetails {
 
 class HelloTriangleApplication {
 public:
+    HelloTriangleApplication() = default;
+    HelloTriangleApplication(Window* window) {
+        myWindow = window; 
+    }
+
     void run() {
-        initWindow();
         initVulkan();
         mainLoop();
         cleanup();
     }
 
 private:
-    GLFWwindow* window;
+    Window* myWindow;
 
     VkInstance instance;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -149,7 +152,6 @@ private:
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
     uint32_t currentFrame = 0;
-    bool framebufferResized = false;
     VkBuffer vertexBuffer;
     VkDeviceMemory vertexBufferMemory;
     VkDebugUtilsMessengerEXT debugMessenger;
@@ -184,19 +186,6 @@ private:
 
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
-
-    void initWindow() {
-        glfwInit();
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
-        glfwSetWindowUserPointer(window, this);
-        glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-    }
-
-    static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-        auto app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
-        app->framebufferResized = true;
-    }
 
     void initVulkan() {
         createInstance();
@@ -1034,8 +1023,8 @@ private:
     }
 
     void createGraphicsPipeline() {
-        auto vertShaderCode = readFile("shaders/vert.spv");
-        auto fragShaderCode = readFile("shaders/frag.spv");
+        auto vertShaderCode = readFile(VERTEX_SHADER_PATH);
+        auto fragShaderCode = readFile(FRAGMENT_SHADER_PATH);
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -1213,7 +1202,7 @@ private:
     }
 
     void createSurface() {
-        VkResult result = glfwCreateWindowSurface(instance, window, nullptr, &surface);
+        VkResult result = myWindow->CreateSurface(instance, &surface);
         if (result != VK_SUCCESS) {
             throw std::runtime_error("failed to create window surface!");
         }
@@ -1377,10 +1366,10 @@ private:
 
     void recreateSwapChain() {
         int width = 0, height = 0;
-        glfwGetFramebufferSize(window, &width, &height);
+        std::tie(width, height) = myWindow->GetFrameBufferSize();
         while (width == 0 || height == 0) {
-            glfwGetFramebufferSize(window, &width, &height);
-            glfwWaitEvents();
+            std::tie(width, height) = myWindow->GetFrameBufferSize();
+            myWindow->WaitEvents();
         }
 
         vkDeviceWaitIdle(device);
@@ -1508,7 +1497,7 @@ private:
             return capabilities.currentExtent;
         } else {
             int width, height;
-            glfwGetFramebufferSize(window, &width, &height);
+            std::tie(width, height) = myWindow->GetFrameBufferSize();
 
             VkExtent2D actualExtent = {
                 static_cast<uint32_t>(width),
@@ -1622,8 +1611,8 @@ private:
     }
 
     void mainLoop() {
-        while (!glfwWindowShouldClose(window)) {
-            glfwPollEvents();
+        while (!myWindow->ShouldClose()) {
+            myWindow->PollEvents();
             drawFrame();
         }
 
@@ -1678,8 +1667,7 @@ private:
         presentInfo.pResults = nullptr;
 
         VkResult queuePresentResult = vkQueuePresentKHR(presentQueue, &presentInfo);
-        if (queuePresentResult == VK_ERROR_OUT_OF_DATE_KHR || queuePresentResult == VK_SUBOPTIMAL_KHR || framebufferResized) {
-            framebufferResized = false;
+        if (queuePresentResult == VK_ERROR_OUT_OF_DATE_KHR || queuePresentResult == VK_SUBOPTIMAL_KHR) {
             recreateSwapChain();
         } else if (queuePresentResult != VK_SUCCESS) {
             throw std::runtime_error("failed to present swap chain image!");
@@ -1747,8 +1735,6 @@ private:
 
         vkDestroySurfaceKHR(instance, surface, nullptr);
         vkDestroyInstance(instance, nullptr);
-        glfwDestroyWindow(window);
-        glfwTerminate();
     }
 
     void setupDebugMessenger() {
@@ -1819,16 +1805,3 @@ private:
         return buffer;
     }
 };
-
-int main() {
-    HelloTriangleApplication app;
-
-    try {
-        app.run();
-    } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    return EXIT_SUCCESS;
-}

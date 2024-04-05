@@ -2,7 +2,8 @@ STB_INCLUDE_PATH = include
 
 RELEASE_CFLAGS = -std=c++17 -O3 -DNDEBUG=1 -I$(STB_INCLUDE_PATH)
 CFLAGS = -std=c++17 -O2 -I$(STB_INCLUDE_PATH)
-LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lwayland-client -lwayland-cursor -lwayland-egl -lwayland-server
+LDFLAGS = -lglfw -lvulkan -ldl -lpthread 
+# -lwayland-client -lwayland-cursor -lwayland-egl -lwayland-server
 
 Compute: Compute.cpp
 	g++ $(CFLAGS) -o bin/Compute Compute.cpp $(LDFLAGS)
@@ -18,8 +19,8 @@ ReleaseCompute: CompileComputeShaders Compute.cpp
 testCompute: Compute CompileComputeShaders
 	./bin/Compute
 
-Graphics: Graphics.cpp
-	g++ $(CFLAGS) -o bin/Graphics Graphics.cpp $(LDFLAGS)
+Graphics: Graphics.hpp
+	g++ $(CFLAGS) -o bin/Graphics.o Graphics.hpp $(LDFLAGS)
 
 CompileGraphicsShaders: shaders/shader.vert shaders/shader.frag
 	glslc shaders/shader.vert -o shaders/vert.spv
@@ -30,6 +31,10 @@ ReleaseGraphics: CompileGraphicsShaders Graphics.cpp
 
 testGraphics: Graphics CompileGraphicsShaders
 	./bin/Graphics
+
+test:
+	g++ $(CFLAGS) -o bin/main main.cpp Graphics.hpp $(LDFLAGS)
+	./bin/main
 
 .PHONY: test clean
 
