@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "Window.hpp"
+#include <vector>
 
 Window::Window(int width, int height, const char* title)
 {
@@ -47,7 +48,18 @@ VkResult Window::CreateSurface(VkInstance instance, VkSurfaceKHR *surface)
     return glfwCreateWindowSurface(instance, window, nullptr, surface);
 }
 
+std::vector<const char *> Window::GetRequiredExtensions()
+{
+    uint32_t glfwExtensionCount = 0;
+    const char **glfwExtensions;
+    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+    std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+    return extensions;
+}
+
 void Window::WaitEvents()
 {
     glfwWaitEvents();
 }
+

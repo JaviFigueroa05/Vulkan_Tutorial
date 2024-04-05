@@ -3,6 +3,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include <vector>
+
 class Window
 {
     public:
@@ -13,6 +15,7 @@ class Window
     void WaitEvents();
     std::pair<int, int> GetFrameBufferSize();
     VkResult CreateSurface(VkInstance instance, VkSurfaceKHR* surface);    
+    std::vector<const char*> GetRequiredExtensions();
     
     private:
     GLFWwindow* window;

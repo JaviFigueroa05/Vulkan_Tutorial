@@ -19,8 +19,8 @@ ReleaseCompute: CompileComputeShaders Compute.cpp
 testCompute: Compute CompileComputeShaders
 	./bin/Compute
 
-Graphics: Graphics.hpp
-	g++ $(CFLAGS) -o bin/Graphics.o Graphics.hpp $(LDFLAGS)
+Graphics: Renderer.hpp
+	g++ $(CFLAGS) -o bin/Graphics.o Renderer.hpp $(LDFLAGS)
 
 CompileGraphicsShaders: shaders/shader.vert shaders/shader.frag
 	glslc shaders/shader.vert -o shaders/vert.spv
@@ -33,7 +33,7 @@ testGraphics: Graphics CompileGraphicsShaders
 	./bin/Graphics
 
 test:
-	g++ $(CFLAGS) -o bin/main main.cpp Graphics.hpp $(LDFLAGS)
+	g++ $(CFLAGS) -o bin/main main.cpp Renderer.hpp $(LDFLAGS)
 	./bin/main
 
 .PHONY: test clean

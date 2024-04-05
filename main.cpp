@@ -1,15 +1,15 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "Graphics.hpp"
+#include "Renderer.hpp"
 #include "Window.hpp"
 
 int main() {
-    Window* window = new Window(1920, 1080, "Vulkan");
-    HelloTriangleApplication app(window);
+    Window* window = new Window(1080, 720, "Vulkan");
+    Renderer renderer(window);
 
     try {
-        app.run();
+        renderer.run();
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
