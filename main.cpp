@@ -1,8 +1,8 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "Renderer.hpp"
-#include "Window.hpp"
+#include "Renderer/Renderer.hpp"
+#include "Renderer/Window.hpp"
 
 int main() {
     Window* window = new Window(1080, 720, "Vulkan");
