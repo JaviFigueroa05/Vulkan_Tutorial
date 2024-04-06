@@ -5,8 +5,8 @@
 #include "Renderer/Window.hpp"
 
 int main() {
-    Window* window = new Window(1080, 720, "Vulkan");
-    Renderer renderer(window);
+    Window window(1080, 720, "Vulkan");
+    Renderer renderer(&window);
 
     try {
         renderer.run();

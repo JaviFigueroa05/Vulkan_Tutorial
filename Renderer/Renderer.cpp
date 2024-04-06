@@ -11,9 +11,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "include/stb_image.h"
 
-#define TINYOBJLOADER_IMPLEMENTATION
-#include "include/tiny_obj_loader.h"
-
 #include <unordered_map>
 #include <chrono>
 #include <iostream>
@@ -32,57 +29,14 @@
 
 #include "Renderer.hpp"
 #include "Window.hpp"
+#include "Vertex.hpp"
+#include "Object.hpp"
 
 const std::string MODEL_PATH = "../meshes/viking_room.obj";
 const std::string TEXTURE_PATH = "../textures/viking_room.png";
 const std::string VERTEX_SHADER_PATH = "../shaders/vert.spv";
 const std::string FRAGMENT_SHADER_PATH = "../shaders/frag.spv";
 const int MAX_FRAMES_IN_FLIGHT = 2;
-
-VkVertexInputBindingDescription Vertex::getBindingDescription()
-{
-    VkVertexInputBindingDescription bindingDescription{};
-    bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof(Vertex);
-    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-    return bindingDescription;
-}
-
-std::array<VkVertexInputAttributeDescription, 3> Vertex::getAttributeDescriptions()
-{
-    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
-    attributeDescriptions[0].binding = 0;
-    attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-    attributeDescriptions[1].binding = 0;
-    attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-    attributeDescriptions[2].binding = 0;
-    attributeDescriptions[2].location = 2;
-    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
-
-    return attributeDescriptions;
-}
-
-bool Vertex::operator==(const Vertex &other) const
-{
-    return pos == other.pos && color == other.color && texCoord == other.texCoord;
-}
-
-template <>
-struct std::hash<Vertex>
-{
-    size_t operator()(Vertex const &vertex) const
-    {
-        return ((std::hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
-    }
-};
 
 bool QueueFamilyIndices::isComplete()
 {
@@ -95,6 +49,14 @@ const bool enableValidationLayers = false;
 #else
 const bool enableValidationLayers = true;
 #endif
+
+template <> struct std::hash<Vertex>
+{
+    size_t operator()(Vertex const &vertex) const
+    {
+        return ((std::hash<glm::vec3>()(vertex.pos) ^ (std::hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (std::hash<glm::vec2>()(vertex.texCoord) << 1);
+    }
+};
 
 Renderer::Renderer(Window *window)
 {
@@ -176,7 +138,7 @@ Renderer::~Renderer()
     vkDestroyInstance(instance, nullptr);
 }
 
-void Renderer::Renderer::run()
+void Renderer::run()
 {
     while (!myWindow->ShouldClose())
     {
@@ -187,7 +149,7 @@ void Renderer::Renderer::run()
     vkDeviceWaitIdle(device);
 }
 
-void Renderer::Renderer::createColorResources()
+void Renderer::createColorResources()
 {
     VkFormat colorFormat = swapChainImageFormat;
 
@@ -195,45 +157,16 @@ void Renderer::Renderer::createColorResources()
     colorImageView = createImageView(colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 }
 
-void Renderer::Renderer::loadModel()
+void Renderer::loadModel()
 {
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::unordered_map<Vertex, uint32_t> uniqueVertices{};
-    std::string warn, err;
+    Object object(MODEL_PATH);
+    Mesh mesh = object.getMesh();
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH.c_str()))
-    {
-        throw std::runtime_error(warn + err);
-    }
-
-    for (const auto &shape : shapes)
-    {
-        for (const auto &index : shape.mesh.indices)
-        {
-            Vertex vertex{};
-            vertex.pos = {
-                attrib.vertices[3 * index.vertex_index + 0],
-                attrib.vertices[3 * index.vertex_index + 1],
-                attrib.vertices[3 * index.vertex_index + 2]};
-            vertex.texCoord = {
-                attrib.texcoords[2 * index.texcoord_index + 0],
-                1.0f - attrib.texcoords[2 * index.texcoord_index + 1]};
-            vertex.color = {1.0f, 1.0f, 1.0f};
-
-            if (uniqueVertices.count(vertex) == 0)
-            {
-                uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-                vertices.push_back(vertex);
-            }
-
-            indices.push_back(uniqueVertices[vertex]);
-        }
-    }
+    vertices = mesh.vertices;
+    indices = mesh.indices;
 }
 
-void Renderer::Renderer::createDepthResources()
+void Renderer::createDepthResources()
 {
     VkFormat depthFormat = findDepthFormat();
     createImage(swapChainExtent.width, swapChainExtent.height, 1, msaaSamples, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);

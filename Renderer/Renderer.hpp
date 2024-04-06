@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vulkan/vulkan.h>
 
 #include <glm/glm.hpp>
@@ -6,24 +8,15 @@
 #include <vector>
 #include <optional>
 #include <array>
+#include <string>
 
 #include "Window.hpp"
-#include <string>
+#include "Vertex.hpp"
 
 struct UniformBufferObject {
     alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 proj;
-};
-
-struct Vertex {
-    glm::vec3 pos;
-    glm::vec3 color;
-    glm::vec2 texCoord;
-
-    static VkVertexInputBindingDescription getBindingDescription();
-    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
-    bool operator==(const Vertex& other) const;
 };
 
 struct QueueFamilyIndices {
