@@ -1,6 +1,9 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "include/tiny_obj_loader.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "include/stb_image.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
 
@@ -17,7 +20,15 @@ template <> struct std::hash<Vertex>
     }
 };
 
-Object::Object(std::string meshPath)
+Object::Object(std::string meshPath, std::string texturePath)
+{
+    this->meshPath = meshPath;
+    this->texturePath = texturePath;
+    loadMesh();
+    loadTexture();
+}
+
+void Object::loadMesh()
 {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -27,7 +38,7 @@ Object::Object(std::string meshPath)
 
     if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, meshPath.c_str()))
     {
-        throw std::runtime_error(warn + err);
+        throw std::runtime_error("Failed to open mesh file!");
     }
 
     for (const auto &shape : shapes)
@@ -56,9 +67,25 @@ Object::Object(std::string meshPath)
     meshPath = meshPath;
 }
 
-Object::~Object() = default;
+void Object::loadTexture() {
+    texture.channels = STBI_rgb_alpha;
+    texture.pixels = stbi_load(texturePath.c_str(), &texture.width, &texture.height, nullptr, STBI_rgb_alpha);
+    if (!texture.pixels)
+    {
+        throw std::runtime_error("failed to load texture image!");
+    }
+}
+
+Object::~Object() {
+    stbi_image_free(texture.pixels);
+}
 
 Mesh Object::getMesh()
 {
     return mesh;
+}
+
+Texture Object::getTexture()
+{
+    return texture;
 }

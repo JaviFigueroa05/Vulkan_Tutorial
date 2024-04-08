@@ -12,6 +12,7 @@
 
 #include "Window.hpp"
 #include "Vertex.hpp"
+#include "Object.hpp"
 
 struct UniformBufferObject {
     alignas(16) glm::mat4 model;
@@ -33,9 +34,9 @@ struct SwapChainSupportDetails {
 
 class Renderer {
 public:
-    Renderer();
     Renderer(Window* window);
     ~Renderer();
+    void bindObject(Object* object);
     void run();
 private:
     Window* myWindow;
@@ -96,7 +97,7 @@ private:
     std::vector<uint32_t> indices;
 
     void createColorResources();
-    void loadModel();
+    void loadMesh(Mesh* mesh);
     void createDepthResources();
     bool hasStencilComponent(VkFormat format);
     VkFormat findDepthFormat();
@@ -104,7 +105,7 @@ private:
     void createTextureSampler();
     void createTextureImageView();
     VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);
-    void createTextureImage();
+    void createTextureImage(Texture* texture);
     void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
     void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
     void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, int32_t mipLevels);

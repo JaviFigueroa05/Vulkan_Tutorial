@@ -8,9 +8,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "include/stb_image.h"
-
 #include <unordered_map>
 #include <chrono>
 #include <iostream>
@@ -32,8 +29,6 @@
 #include "Vertex.hpp"
 #include "Object.hpp"
 
-const std::string MODEL_PATH = "../meshes/viking_room.obj";
-const std::string TEXTURE_PATH = "../textures/viking_room.png";
 const std::string VERTEX_SHADER_PATH = "../shaders/vert.spv";
 const std::string FRAGMENT_SHADER_PATH = "../shaders/frag.spv";
 const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -75,15 +70,6 @@ Renderer::Renderer(Window *window)
     createColorResources();
     createDepthResources();
     createFramebuffers();
-    createTextureImage();
-    createTextureImageView();
-    createTextureSampler();
-    loadModel();
-    createVertexBuffer();
-    createIndexBuffer();
-    createUniformBuffers();
-    createDescriptorPool();
-    createDescriptorSets();
     createCommandBuffer();
     createSyncObjects();
 }
@@ -138,6 +124,21 @@ Renderer::~Renderer()
     vkDestroyInstance(instance, nullptr);
 }
 
+void Renderer::bindObject(Object *object)
+{
+    Texture texture = object->getTexture();
+    Mesh mesh = object->getMesh();
+    createTextureImage(&texture);
+    createTextureImageView();
+    createTextureSampler();
+    loadMesh(&mesh);
+    createVertexBuffer();
+    createIndexBuffer();
+    createUniformBuffers();
+    createDescriptorPool();
+    createDescriptorSets();
+}
+
 void Renderer::run()
 {
     while (!myWindow->ShouldClose())
@@ -157,13 +158,10 @@ void Renderer::createColorResources()
     colorImageView = createImageView(colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 }
 
-void Renderer::loadModel()
+void Renderer::loadMesh(Mesh* mesh)
 {
-    Object object(MODEL_PATH);
-    Mesh mesh = object.getMesh();
-
-    vertices = mesh.vertices;
-    indices = mesh.indices;
+    vertices = mesh->vertices;
+    indices = mesh->indices;
 }
 
 void Renderer::createDepthResources()
@@ -264,38 +262,32 @@ VkImageView Renderer::createImageView(VkImage image, VkFormat format, VkImageAsp
     return imageView;
 }
 
-void Renderer::createTextureImage()
+void Renderer::createTextureImage(Texture* texture)
 {
-    int texWidth, texHeight, texChannels;
-    stbi_uc *pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-    VkDeviceSize imageSize = texWidth * texHeight * 4;
-    mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
-
-    if (!pixels)
-    {
-        throw std::runtime_error("failed to load texture image!");
-    }
-
+    std::cout << "Texture Width: " << texture->width << std::endl;
+    std::cout << "Texture Height: " << texture->height << std::endl;
+    std::cout << "Texture Channels: " << texture->channels << std::endl;
+    
+    VkDeviceSize imageSize = texture->width * texture->height * texture->channels;
+    mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texture->width, texture->height)))) + 1;
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
     createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
     void *data;
     vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
-    memcpy(data, pixels, static_cast<size_t>(imageSize));
+    memcpy(data, texture->pixels, static_cast<size_t>(imageSize));
     vkUnmapMemory(device, stagingBufferMemory);
 
-    stbi_image_free(pixels);
-
-    createImage(texWidth, texHeight, mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+    createImage(texture->width, texture->height, mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 
     transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mipLevels);
-    copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+    copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texture->width), static_cast<uint32_t>(texture->height));
 
     vkDestroyBuffer(device, stagingBuffer, nullptr);
     vkFreeMemory(device, stagingBufferMemory, nullptr);
 
-    generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, mipLevels);
+    generateMipmaps(textureImage, VK_FORMAT_R8G8B8A8_SRGB, texture->width, texture->height, mipLevels);
 }
 
 void Renderer::generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels)
@@ -557,6 +549,7 @@ void Renderer::createDescriptorSets()
         descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         descriptorWrites[0].descriptorCount = 1;
         descriptorWrites[0].pBufferInfo = &bufferInfo;
+
         descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[1].dstSet = descriptorSets[i];
         descriptorWrites[1].dstBinding = 1;
