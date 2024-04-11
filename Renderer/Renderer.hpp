@@ -13,9 +13,9 @@
 #include "Window.hpp"
 #include "Vertex.hpp"
 #include "Object.hpp"
+#include "Camera.hpp"
 
 struct UniformBufferObject {
-    alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 proj;
 };
@@ -37,7 +37,8 @@ public:
     Renderer(Window* window);
     ~Renderer();
     void bindObject(Object* object);
-    void run();
+    void bindCamera(Camera* camera);
+    void drawFrame();
 private:
     Window* myWindow;
 
@@ -149,8 +150,7 @@ private:
     std::vector<const char*> getRequiredExtensions();
     std::vector<VkExtensionProperties> getSupportedVulkanExtensions();
     bool validateExtensions(const std::vector<const char*> requiredExtensions, const std::vector<VkExtensionProperties>& supportedExtensions);
-    void drawFrame();
-    void updateUniformBuffer(uint32_t currentImage);
+    void updateUniformBuffer(uint32_t currentImage, glm::mat4 view, glm::mat4 proj);
     void setupDebugMessenger();
     void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
     VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);

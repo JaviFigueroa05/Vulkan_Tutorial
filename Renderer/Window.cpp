@@ -63,3 +63,7 @@ void Window::WaitEvents()
     glfwWaitEvents();
 }
 
+bool Window::isKeyPressed(uint16_t keyCode)
+{
+    return glfwGetKey(window, keyCode) == GLFW_PRESS;
+}

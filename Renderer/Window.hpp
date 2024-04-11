@@ -16,6 +16,7 @@ class Window
     std::pair<int, int> GetFrameBufferSize();
     VkResult CreateSurface(VkInstance instance, VkSurfaceKHR* surface);    
     std::vector<const char*> GetRequiredExtensions();
+    bool isKeyPressed(uint16_t keyCode);
     
     private:
     GLFWwindow* window;

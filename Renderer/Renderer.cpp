@@ -1,15 +1,8 @@
 #include <vulkan/vulkan.h>
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/hash.hpp>
 
 #include <unordered_map>
-#include <chrono>
 #include <iostream>
 #include <stdexcept>
 #include <cstdlib>
@@ -29,8 +22,8 @@
 #include "Vertex.hpp"
 #include "Object.hpp"
 
-const std::string VERTEX_SHADER_PATH = "../shaders/vert.spv";
-const std::string FRAGMENT_SHADER_PATH = "../shaders/frag.spv";
+const std::string VERTEX_SHADER_PATH = "shaders/shader.vert.spv";
+const std::string FRAGMENT_SHADER_PATH = "shaders/shader.frag.spv";
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
 bool QueueFamilyIndices::isComplete()
@@ -44,14 +37,6 @@ const bool enableValidationLayers = false;
 #else
 const bool enableValidationLayers = true;
 #endif
-
-template <> struct std::hash<Vertex>
-{
-    size_t operator()(Vertex const &vertex) const
-    {
-        return ((std::hash<glm::vec3>()(vertex.pos) ^ (std::hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (std::hash<glm::vec2>()(vertex.texCoord) << 1);
-    }
-};
 
 Renderer::Renderer(Window *window)
 {
@@ -72,10 +57,14 @@ Renderer::Renderer(Window *window)
     createFramebuffers();
     createCommandBuffer();
     createSyncObjects();
+    createUniformBuffers();
+    createDescriptorPool();
 }
 
 Renderer::~Renderer()
 {
+    vkDeviceWaitIdle(device);
+
     cleanupSwapChain();
 
     vkDestroySampler(device, textureSampler, nullptr);
@@ -134,20 +123,12 @@ void Renderer::bindObject(Object *object)
     loadMesh(&mesh);
     createVertexBuffer();
     createIndexBuffer();
-    createUniformBuffers();
-    createDescriptorPool();
     createDescriptorSets();
 }
 
-void Renderer::run()
+void Renderer::bindCamera(Camera *camera)
 {
-    while (!myWindow->ShouldClose())
-    {
-        myWindow->PollEvents();
-        drawFrame();
-    }
-
-    vkDeviceWaitIdle(device);
+    updateUniformBuffer(currentFrame, camera->getView(), camera->getProj());
 }
 
 void Renderer::createColorResources()
@@ -264,10 +245,6 @@ VkImageView Renderer::createImageView(VkImage image, VkFormat format, VkImageAsp
 
 void Renderer::createTextureImage(Texture* texture)
 {
-    std::cout << "Texture Width: " << texture->width << std::endl;
-    std::cout << "Texture Height: " << texture->height << std::endl;
-    std::cout << "Texture Channels: " << texture->channels << std::endl;
-    
     VkDeviceSize imageSize = texture->width * texture->height * texture->channels;
     mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texture->width, texture->height)))) + 1;
     VkBuffer stagingBuffer;
@@ -1698,8 +1675,6 @@ void Renderer::drawFrame()
     vkResetCommandBuffer(commandBuffers[currentFrame], 0);
     recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
 
-    updateUniformBuffer(currentFrame);
-
     VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
     VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -1742,19 +1717,11 @@ void Renderer::drawFrame()
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void Renderer::updateUniformBuffer(uint32_t currentImage)
+void Renderer::updateUniformBuffer(uint32_t currentImage, glm::mat4 view, glm::mat4 proj)
 {
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
     UniformBufferObject ubo{};
-    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
-    ubo.proj[1][1] *= -1;
-
+    ubo.view = view;
+    ubo.proj = proj;
     memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 }
 
