@@ -32,10 +32,11 @@ bool QueueFamilyIndices::isComplete()
            presentFamily.has_value();
 }
 
-#ifdef NDEBUG
-const bool enableValidationLayers = false;
-#else
+#define DEBUG 1
+#ifdef DEBUG
 const bool enableValidationLayers = true;
+#else
+const bool enableValidationLayers = false;
 #endif
 
 Renderer::Renderer(Window *window)

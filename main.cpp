@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
 
+#include "_deps/tracy-src/public/tracy/Tracy.hpp"
+
 #include "Renderer/Renderer.hpp"
 #include "Renderer/Window.hpp"
 #include "Renderer/Camera.hpp"
