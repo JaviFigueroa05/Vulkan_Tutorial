@@ -5,9 +5,8 @@ project(RendererDemo VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_BUILD_TYPE Debug)
 
-option( TRACY_ENABLE "" ON)
-option( TRACY_ON_DEMAND "" ON)
 FetchContent_Declare(
     tracy
     GIT_REPOSITORY https://github.com/wolfpld/tracy.git
@@ -19,6 +18,10 @@ FetchContent_MakeAvailable(tracy)
 
 add_subdirectory(Renderer)
 add_subdirectory(shaders)
+
+option(TRACY_ENABLE "" ON)
+option(TRACY_ON_DEMAND "" ON)
+option(TRACY_NO_SAMPLING "" ON)
 
 add_executable(RendererDemo main.cpp)
 target_link_libraries(RendererDemo PUBLIC Renderer)

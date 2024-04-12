@@ -5,7 +5,8 @@
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
 
-#include "_deps/tracy-src/public/tracy/Tracy.hpp"
+#define TRACY_NO_SAMPLING 1
+#include "build/_deps/tracy-src/public/tracy/Tracy.hpp"
 
 #include "Renderer/Renderer.hpp"
 #include "Renderer/Window.hpp"
@@ -46,6 +47,7 @@ int main() {
             camera.move(deltaTime * cameraDirection);
             renderer.bindCamera(&camera);
             renderer.drawFrame();
+            FrameMark;
         }
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;

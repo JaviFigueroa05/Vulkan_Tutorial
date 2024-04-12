@@ -17,6 +17,8 @@
 #include <fstream>
 #include <array>
 
+#include "../build/_deps/tracy-src/public/tracy/Tracy.hpp"
+
 #include "Renderer.hpp"
 #include "Window.hpp"
 #include "Vertex.hpp"
@@ -790,6 +792,7 @@ void Renderer::createCommandBuffer()
 
 void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
 {
+    ZoneScoped;
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = 0;
@@ -1657,6 +1660,7 @@ bool Renderer::validateExtensions(
 
 void Renderer::drawFrame()
 {
+    ZoneScoped;
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
