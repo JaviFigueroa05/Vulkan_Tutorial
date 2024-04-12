@@ -1324,7 +1324,14 @@ int Renderer::rateDeviceSuitability(VkPhysicalDevice device)
     {
         score += 1000;
     }
+    if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
+    {
+        score += 500;
+    }
+
     score += deviceProperties.limits.maxImageDimension2D;
+
+    std::cout << deviceProperties.deviceName << " Score: " << score << std::endl;
 
     return score;
 }
