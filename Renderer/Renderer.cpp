@@ -1328,11 +1328,8 @@ int Renderer::rateDeviceSuitability(VkPhysicalDevice device)
     {
         score += 500;
     }
-
     score += deviceProperties.limits.maxImageDimension2D;
-
-    std::cout << deviceProperties.deviceName << " Score: " << score << std::endl;
-
+    
     return score;
 }
 

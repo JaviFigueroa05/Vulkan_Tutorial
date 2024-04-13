@@ -11,16 +11,17 @@ private:
     glm::vec3 position;
     glm::vec3 front;
     glm::vec3 up;
+    glm::vec3 right;
 
     glm::mat4 view;
     glm::mat4 proj;
 
 public:
-    Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fovyDegrees, float aspectRatio, float nearClip, float farClip);
+    Camera(glm::vec3 position, glm::vec3 up, float fovyDegrees, float aspectRatio, float nearClip, float farClip);
     ~Camera() = default;
 
-    void updatePosition(glm::vec3 position, glm::vec3 front, glm::vec3 up);
-    void move(glm::vec3 position);
+    void moveCameraSpace(glm::vec3 position);
+    void moveGlobalSpace(glm::vec3 position);
 
     glm::mat4 getView();
     glm::mat4 getProj();
