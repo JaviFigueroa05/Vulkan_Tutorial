@@ -17,6 +17,7 @@ class Window
     VkResult CreateSurface(VkInstance instance, VkSurfaceKHR* surface);    
     std::vector<const char*> GetRequiredExtensions();
     bool isKeyPressed(uint16_t keyCode);
+    std::pair<float, float> GetCursorPos();
     
     private:
     GLFWwindow* window;

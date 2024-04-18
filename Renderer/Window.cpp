@@ -67,3 +67,10 @@ bool Window::isKeyPressed(uint16_t keyCode)
 {
     return glfwGetKey(window, keyCode) == GLFW_PRESS;
 }
+
+std::pair<float, float> Window::GetCursorPos()
+{
+    double x, y;
+    glfwGetCursorPos(window, &x, &y);
+    return {(float)x, (float)y};
+}

@@ -129,6 +129,7 @@ void Renderer::bindObject(Object *object)
     createDescriptorSets();
 }
 
+
 void Renderer::bindCamera(Camera *camera)
 {
     updateUniformBuffer(currentFrame, camera->getView(), camera->getProj());
