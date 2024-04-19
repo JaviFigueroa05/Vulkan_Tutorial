@@ -1,8 +1,8 @@
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "include/tiny_obj_loader.h"
+#include "build/_deps/tinyobjloader-src/tiny_obj_loader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "include/stb_image.h"
+#include "build/_deps/stb-src/stb_image.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 
-#include "Object.hpp"
+#include "include/MyRenderer.hpp"
 
 template <> struct std::hash<Vertex>
 {

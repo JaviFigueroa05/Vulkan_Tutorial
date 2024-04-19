@@ -1,34 +1,10 @@
 #include <iostream>
 
-#include "Camera.hpp"
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-void Camera::print(glm::vec4 vec)
-{
-    std::cout << std::endl   
-              << vec.x << " "
-              << vec.y << " "
-              << vec.z << " "
-              << vec.w << std::endl;
-}
-
-void Camera::print(glm::mat3 mat)
-{
-    std::cout << std::endl
-              << mat[0][0] << "\t" << mat[0][1] << "\t" << mat[0][2] << std::endl
-              << mat[1][0] << "\t" << mat[1][1] << "\t" << mat[1][2] << std::endl
-              << mat[2][0] << "\t" << mat[2][1] << "\t" << mat[2][2] << std::endl
-              << std::endl;
-}
-
-void Camera::print(glm::mat4 mat)
-{
-    std::cout << std::endl
-              << mat[0][0] << "\t" << mat[0][1] << "\t" << mat[0][2] << "\t" << mat[0][3] << std::endl
-              << mat[1][0] << "\t" << mat[1][1] << "\t" << mat[1][2] << "\t" << mat[1][3] << std::endl
-              << mat[2][0] << "\t" << mat[2][1] << "\t" << mat[2][2] << "\t" << mat[2][3] << std::endl
-              << mat[3][0] << "\t" << mat[3][1] << "\t" << mat[3][2] << "\t" << mat[3][3] << std::endl
-              << std::endl;
-}
+#include "include/MyRenderer.hpp"
 
 Camera::Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fovyDegrees, float aspectRatio, float nearClip, float farClip)
 {

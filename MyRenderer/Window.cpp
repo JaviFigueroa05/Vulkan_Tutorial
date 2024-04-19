@@ -3,7 +3,7 @@
 
 #include <stdexcept>
 
-#include "Window.hpp"
+#include "include/MyRenderer.hpp"
 #include <vector>
 
 Window::Window(int width, int height, const char* title)

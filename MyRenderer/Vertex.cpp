@@ -2,7 +2,7 @@
 #include <vulkan/vulkan.h>
 #include <array>
 
-#include "Vertex.hpp"
+#include "include/MyRenderer.hpp"
 
 VkVertexInputBindingDescription Vertex::getBindingDescription()
 {

@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 
 #include <glm/glm.hpp>
+#include <GLFW/glfw3.h>
 
 #include <cstdlib>
 #include <vector>
@@ -10,10 +11,78 @@
 #include <array>
 #include <string>
 
-#include "Window.hpp"
-#include "Vertex.hpp"
-#include "Object.hpp"
-#include "Camera.hpp"
+class Camera {
+private:
+    glm::mat4 view;
+    glm::mat4 proj;
+public:
+    Camera(glm::vec3 position, glm::vec3 front, glm::vec3 up, float fovyDegrees, float aspectRatio, float nearClip, float farClip);
+    ~Camera() = default;
+
+    void moveCameraSpace(glm::vec3 position);
+    void rotateCameraSpace(glm::vec3 deltaCursor, float rotationSpeed);
+    void moveGlobalSpace(glm::vec3 position);
+
+    glm::mat4 getView();
+    glm::mat4 getProj();
+};
+
+class Window
+{
+    public:
+    Window(int width, int height, const char* title);
+    ~Window();
+    bool ShouldClose();
+    void PollEvents();
+    void WaitEvents();
+    std::pair<int, int> GetFrameBufferSize();
+    VkResult CreateSurface(VkInstance instance, VkSurfaceKHR* surface);    
+    std::vector<const char*> GetRequiredExtensions();
+    bool isKeyPressed(uint16_t keyCode);
+    std::pair<float, float> GetCursorPos();
+    
+    private:
+    GLFWwindow* window;
+};
+
+struct Vertex {
+    glm::vec3 pos;
+    glm::vec3 color;
+    glm::vec2 texCoord;
+
+    static VkVertexInputBindingDescription getBindingDescription();
+    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
+    bool operator==(const Vertex& other) const;
+};
+
+struct Mesh {
+    std::vector<Vertex> vertices;
+    std::vector<uint32_t> indices;
+};
+
+struct Texture {
+    int width;
+    int height;
+    int channels;
+    unsigned char* pixels;
+};
+
+class Object {
+private:
+    std::string meshPath;
+    Mesh mesh;
+    void loadMesh();
+
+    std::string texturePath;
+    Texture texture;
+    void loadTexture();
+    
+public:
+    Object(std::string meshPath, std::string texturePath);
+    ~Object();
+    Mesh getMesh();
+    Texture getTexture();
+};
 
 struct UniformBufferObject {
     alignas(16) glm::mat4 view;

@@ -5,12 +5,13 @@
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
 
-#include "MyRenderer/include/MyRenderer.hpp"
-
+#include "Renderer/Renderer.hpp"
+#include "Renderer/Window.hpp"
+#include "Renderer/Camera.hpp"
 #include <tuple>
 
-const std::string MODEL_PATH = "../meshes/viking_room.obj";
-const std::string TEXTURE_PATH = "../textures/viking_room.png";
+const std::string MODEL_PATH = "../examples/meshes/viking_room.obj";
+const std::string TEXTURE_PATH = "../examples/textures/viking_room.png";
 
 const int WIDTH = 1080;
 const int HEIGHT = 720;
